@@ -35,6 +35,22 @@ app.get('/scrape', function(req, res){
                             var availability = description.split('\n')[3].split(': ')[1];
 
 
+                            var options = itemHtml('.options').children('div').each(function() {
+                                var option = {};
+                                option.option_values = [];
+
+
+                                var optionText = itemHtml(this).children('b').text().split('::')[0];
+                                option.display_name = optionText;
+                                itemHtml(this).children('select').children('option').each(function() {
+                                    var optionValue = itemHtml(this).text().trim();
+                                    if (!optionValue.includes('Please Select')) {
+                                        option.option_values.push(optionValue);
+                                    }
+                                });
+                                console.log(option);
+                            });
+
                             var product = {};
                             product.name = title;
                             product.sku = sku;
