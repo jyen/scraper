@@ -30,6 +30,11 @@ app.get('/scrape', function(req, res){
                                 var sku = productTitle.substr(0, productTitle.indexOf(' '));
                                 var title = productTitle.substr(productTitle.indexOf(' ')+1);
 
+                                var cost = itemHtml('span[itemprop="price"]').text().substr(1);
+
+                                var detail = itemHtml('#tab-description').text();
+                                console.log(detail);
+
 
 
                                 var description = itemHtml(".description").text();
@@ -37,9 +42,9 @@ app.get('/scrape', function(req, res){
                                 var weight = description.split('\n')[2].split(': ')[1];
                                 var availability = description.split('\n')[3].split(': ')[1];
 
+                                var option = {};
 
                                 var options = itemHtml('.options').children('div').each(function() {
-                                    var option = {};
                                     option.option_values = [];
 
 
@@ -51,12 +56,13 @@ app.get('/scrape', function(req, res){
                                             option.option_values.push(optionValue);
                                         }
                                     });
-                                    console.log(option);
                                 });
 
                                 var product = {};
                                 product.name = title;
                                 product.sku = sku;
+                                product.option = option;
+                                product.cost_price = cost;
 
                                 products.push(product);
                             }
