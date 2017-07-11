@@ -5,6 +5,27 @@ var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
 var async = require('async');
+var BigCommerce = require('node-bigcommerce');
+var secret = require('./secret.json');
+
+var bigCommerce = new BigCommerce(secret);
+
+app.get('/products', function(req, res) {
+    bigCommerce.get('/products', function(err, data, response){
+        // Catch any errors, or handle the data returned
+        // The response object is passed back for convenience
+        console.log(data);
+        console.log(response);
+        console.log(err);
+        return res.status(200).json(data);
+    });
+});
+
+app.get('/categories', function(req, res) {
+    bigCommerce.get('/categories', function(err, data, response){
+        return res.status(200).json(data);
+    });
+});
 
 app.get('/scrape', function(req, res){
 
@@ -33,9 +54,6 @@ app.get('/scrape', function(req, res){
                                 var cost = itemHtml('span[itemprop="price"]').text().substr(1);
 
                                 var detail = itemHtml('#tab-description').text();
-                                console.log(detail);
-
-
 
                                 var description = itemHtml(".description").text();
                                 var productCode = description.split('\n')[0].split(': ')[1];
@@ -62,9 +80,13 @@ app.get('/scrape', function(req, res){
                                 product.name = title;
                                 product.type = 'physical';
                                 product.sku = sku;
-                                product.option = option;
-                                product.cost_price = cost;
-
+                                // product.option = option;
+                                product.cost_price = cost * 1;
+                                product.availability = 'available';
+                                product.description = detail;
+                                product.price = cost * 1.5;
+                                product.categories = [14];
+                                product.weight = Math.round((weight.split(' ')[0])* 0.00220 * 100) / 100;
                                 products.push(product);
                             }
                             callback();
@@ -79,6 +101,15 @@ app.get('/scrape', function(req, res){
             // Call createProductImage
 
             // All tasks are done now
+
+            for (var i = 0; i < products.length; i++) {
+                var product = products[i];
+                bigCommerce.post('/products', product, function(err, data, response){
+                    // Catch any errors, or handle the data returned
+                    // The response object is passed back for convenience
+                    console.log(err);
+                });
+            }
             res.status(200).json(products);
         });
     });
