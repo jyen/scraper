@@ -73,6 +73,10 @@ app.get('/scrape', function(req, res){
             });
         }
         async.parallel(asyncTasks, function(){
+            // Make calls to BigCommerce API createProduct
+            // Call createOption
+            // Call createProductImage
+
             // All tasks are done now
             res.status(200).json(products);
         });
