@@ -60,6 +60,7 @@ app.get('/scrape', function(req, res){
 
                                 var product = {};
                                 product.name = title;
+                                product.type = 'physical';
                                 product.sku = sku;
                                 product.option = option;
                                 product.cost_price = cost;
