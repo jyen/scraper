@@ -83,6 +83,7 @@ app.get('/scrape', function(req, res){
                                 // product.option = option;
                                 product.cost_price = cost * 1;
                                 product.availability = 'available';
+                                product.is_visible = true;
                                 product.description = detail;
                                 product.price = cost * 1.5;
                                 product.categories = [14];
