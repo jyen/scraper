@@ -11,7 +11,7 @@ var secret = require('./secret.json');
 var bigCommerce = new BigCommerce(secret);
 
 app.get('/products', function(req, res) {
-    bigCommerce.get('/products', function(err, data, response){
+    bigCommerce.get('/catalog/products?include=variants,images,custom_fields,bulk_pricing_rules', function(err, data, response){
         // Catch any errors, or handle the data returned
         // The response object is passed back for convenience
         console.log(data);
@@ -27,7 +27,14 @@ app.get('/categories', function(req, res) {
     });
 });
 
-app.get('/scrape', function(req, res){
+app.get('/scrape', function(req, res) {
+    // wipe store
+    bigCommerce.delete('/catalog/products?categories=14', null, function(err, data, response) {
+        console.log(err);
+    });
+    bigCommerce.delete('/options', null, function(err, data, response) {
+        console.log(err);
+    });
 
     //All the web scraping magic will happen here
     url = 'http://www.maxuce.com/handbag?limit=100';
@@ -60,11 +67,16 @@ app.get('/scrape', function(req, res){
                                 var weight = description.split('\n')[2].split(': ')[1];
                                 var availability = description.split('\n')[3].split(': ')[1];
 
+                                var images = [];
+
+                                var image = itemHtml('.image_carousel').children('li').each(function() {
+                                    console.log(itemHtml(this).children('a').attr('href'));
+                                });
+
                                 var option = {};
 
                                 var options = itemHtml('.options').children('div').each(function() {
                                     option.option_values = [];
-
 
                                     var optionText = itemHtml(this).children('b').text().split('::')[0];
                                     option.display_name = optionText;
@@ -81,6 +93,7 @@ app.get('/scrape', function(req, res){
                                 product.type = 'physical';
                                 product.sku = sku;
                                 // product.option = option;
+
                                 product.cost_price = cost * 1;
                                 product.availability = 'available';
                                 product.is_visible = true;
@@ -97,15 +110,9 @@ app.get('/scrape', function(req, res){
             });
         }
         async.parallel(asyncTasks, function(){
-            // Make calls to BigCommerce API createProduct
-            // Call createOption
-            // Call createProductImage
-
-            // All tasks are done now
-
             for (var i = 0; i < products.length; i++) {
                 var product = products[i];
-                bigCommerce.post('/products', product, function(err, data, response){
+                bigCommerce.post('/catalog/products', product, function(err, data, response){
                     // Catch any errors, or handle the data returned
                     // The response object is passed back for convenience
                     console.log(err);
@@ -121,3 +128,5 @@ app.listen('8081')
 console.log('Magic happens on port 8081');
 
 exports = module.exports = app;
+
+
